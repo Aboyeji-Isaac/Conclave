@@ -122,9 +122,7 @@ const listRooms = asyncHandler(async (req, res) => {
 const getRoom = asyncHandler(async (req, res) => {
   const { roomId } = req.params;
 
-  // 1. Load the room, caller membership, and members in one database round trip.
-  // The caller membership uses a LEFT JOIN so we can distinguish a missing room
-  // from an existing room that the caller is not allowed to view.
+  // 1. Fetch room details, check caller membership, and aggregate members cleanly.
   const result = await query(
     `SELECT
        r.id,
@@ -132,38 +130,34 @@ const getRoom = asyncHandler(async (req, res) => {
        r.type,
        r.created_by,
        r.created_at,
-       caller_membership.role AS my_role,
+       (
+         SELECT rm.role
+         FROM room_members rm
+         WHERE rm.room_id = r.id AND rm.user_id = $2
+       ) AS my_role,
        COALESCE(
-         json_agg(
-           json_build_object(
-             'id', u.id,
-             'display_name', u.display_name,
-             'avatar_url', u.avatar_url,
-             'role', room_members.role,
-             'joined_at', room_members.joined_at,
-             'last_seen_at', room_members.last_seen_at
+         (
+           SELECT json_agg(
+             json_build_object(
+               'id', u.id,
+               'display_name', u.display_name,
+               'avatar_url', u.avatar_url,
+               'role', rm2.role,
+               'joined_at', rm2.joined_at,
+               'last_seen_at', rm2.last_seen_at
+             )
+             ORDER BY rm2.role = 'admin' DESC,
+                      rm2.joined_at ASC,
+                      rm2.user_id ASC
            )
-           ORDER BY room_members.role = 'admin' DESC,
-                    room_members.joined_at ASC
-         ) FILTER (WHERE u.id IS NOT NULL),
+           FROM room_members rm2
+           INNER JOIN users u ON u.id = rm2.user_id
+           WHERE rm2.room_id = r.id
+         ),
          '[]'::json
        ) AS members
      FROM rooms r
-     LEFT JOIN room_members caller_membership
-       ON caller_membership.room_id = r.id
-      AND caller_membership.user_id = $2
-     LEFT JOIN room_members
-       ON room_members.room_id = r.id
-     LEFT JOIN users u
-       ON u.id = room_members.user_id
-     WHERE r.id = $1
-     GROUP BY
-       r.id,
-       r.name,
-       r.type,
-       r.created_by,
-       r.created_at,
-       caller_membership.role`,
+     WHERE r.id = $1`,
     [roomId, req.user.id],
   );
 
@@ -192,63 +186,59 @@ const addMember = asyncHandler(async (req, res) => {
     throw new ApiError(400, "userId is required");
   }
 
-  // 1. Check caller is admin of this room
-  const callerMembership = await query(
-    `SELECT role FROM room_members WHERE room_id = $1 AND user_id = $2`,
-    [roomId, req.user.id],
-  );
-  if (callerMembership.rows.length === 0) {
-    throw new ApiError(403, "You are not a member of this room");
-  }
-  if (callerMembership.rows[0].role !== "admin") {
-    throw new ApiError(403, "Only room admins can add members");
-  }
-
-  // 2. Verify the target room exists
-  const roomResult = await query(`SELECT id, type FROM rooms WHERE id = $1`, [
-    roomId,
-  ]);
-  if (roomResult.rows.length === 0) {
-    throw new ApiError(404, "Room not found");
-  }
-
-  // 3. Verify the target user exists
-  const userResult = await query(
-    `SELECT id, display_name FROM users WHERE id = $1`,
-    [userId],
-  );
-  if (userResult.rows.length === 0) {
-    throw new ApiError(404, "User not found");
-  }
-
-  // 4. Check if already a member
-  const existing = await query(
-    `SELECT user_id FROM room_members WHERE room_id = $1 AND user_id = $2`,
-    [roomId, userId],
-  );
-  if (existing.rows.length > 0) {
-    throw new ApiError(409, "User is already a member of this room");
-  }
-
-  // 5. Add as member
-  await query(
-    `INSERT INTO room_members (room_id, user_id, role) VALUES ($1, $2, 'member')`,
-    [roomId, userId],
+  // 1. Validate room exists, target user exists, caller is an admin.
+  const check = await query(
+    `SELECT
+       (SELECT type FROM rooms WHERE id = $1) AS room_type,
+       (SELECT display_name FROM users WHERE id = $2) AS display_name,
+       (SELECT role FROM room_members WHERE room_id = $1 AND user_id = $3) AS caller_role`,
+    [roomId, userId, req.user.id],
   );
 
-  // 6. Create notification for the added user
-  await query(
-    `INSERT INTO notifications (recipient_id, type, reference_id)
-     VALUES ($1, 'room_invite', $2)`,
-    [userId, roomId],
-  );
+  const { room_type, display_name, caller_role } = check.rows[0];
+
+  if (!room_type) throw new ApiError(404, "Room not found");
+  if (!display_name) throw new ApiError(404, "User not found");
+  if (!caller_role) throw new ApiError(403, "You are not a member of this room");
+  if (caller_role !== "admin") throw new ApiError(403, "Only room admins can add members");
+
+  // 2. Insert the member + create notification in a single transaction.
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const insertResult = await client.query(
+      `INSERT INTO room_members (room_id, user_id, role)
+       VALUES ($1, $2, 'member')
+       ON CONFLICT (room_id, user_id) DO NOTHING
+       RETURNING user_id`,
+      [roomId, userId],
+    );
+
+    if (insertResult.rows.length === 0) {
+      throw new ApiError(409, "User is already a member of this room");
+    }
+
+    await client.query(
+      `INSERT INTO notifications (recipient_id, type, reference_id)
+       VALUES ($1, 'room_invite', $2)`,
+      [userId, roomId],
+    );
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
 
   return ok(
     res,
     {
       roomId,
       userId,
-      displayName: userResult.rows[0].display_name,
+      displayName: display_name,
       role: "member",
     },
     201,
