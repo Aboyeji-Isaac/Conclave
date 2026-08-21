@@ -1,4 +1,4 @@
-# [Project Name TBD] — Private Collaboration Platform
+# Conclave — Private Collaboration Platform
 
 A private, invite-only messaging & collaboration platform for the team — instant messaging, rooms, media sharing, plus a memory layer competitors don't have: **Decisions**, **Action Items**, and **Catch-up Digests** that survive the scroll.
 
