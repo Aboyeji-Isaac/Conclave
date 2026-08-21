@@ -22,7 +22,15 @@ after the fact.
 | PATCH | /users/me | TODO |
 | GET | /users | TODO |
 
-## Rooms / Messages / Decisions / Tasks / Digest / Notifications / Upload
+## Rooms
+| Method | Path | Body | Notes |
+|---|---|---|---|
+| POST | /rooms | `{ name, type?, memberIds? }` | ✅ implemented — creates room, caller becomes admin |
+| GET | /rooms | — | ✅ implemented — lists rooms user is a member of |
+| GET | /rooms/:roomId | — | ✅ implemented — room details + members, membership check |
+| POST | /rooms/:roomId/members | `{ userId }` | ✅ implemented — adds member, caller must be admin |
+
+## Messages / Decisions / Tasks / Digest / Notifications / Upload
 
 TODO — one row per endpoint, same format as above, filled in as each
 person builds their assigned area. See the PKB §8 for ownership.
