@@ -1,0 +1,3 @@
+import { useEffect, useState } from 'react';
+import { getRoom } from '../services/rooms.service';
+export default function useRoom(roomId) { const [room, setRoom] = useState(null); const [isLoading, setIsLoading] = useState(true); const [error, setError] = useState(''); useEffect(() => { let active = true; setIsLoading(true); setError(''); getRoom(roomId).then((value) => active && setRoom(value)).catch((err) => active && setError(err.response?.data?.message || 'Could not load this room.')).finally(() => active && setIsLoading(false)); return () => { active = false; }; }, [roomId]); return { room, isLoading, error }; }
