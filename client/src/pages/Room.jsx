@@ -1,7 +1,9 @@
-import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useOutletContext, useParams } from 'react-router-dom';
 import CatchUpDigest from '../components/chat/CatchUpDigest';
 import MessageComposer from '../components/chat/MessageComposer';
 import MessageTimeline from '../components/chat/MessageTimeline';
+import RoomHeader from '../components/chat/RoomHeader';
 import Spinner from '../components/ui/Spinner';
 import { useAuth } from '../contexts/AuthContext';
 import { useRealtime } from '../contexts/RealtimeContext';
@@ -10,9 +12,11 @@ import useRoom from '../hooks/useRoom';
 
 export default function Room() {
   const { roomId } = useParams(); const { user } = useAuth(); const { isConnected } = useRealtime();
+  const { setRoomHeader } = useOutletContext();
   const { room, isLoading: roomLoading, error: roomError } = useRoom(roomId);
   const { messages, isLoading: messagesLoading, error: messagesError, sendMessage } = useMessages(roomId);
+  useEffect(() => { if (!room) return undefined; setRoomHeader(<RoomHeader room={room} isConnected={isConnected} />); return () => setRoomHeader(null); }, [room, isConnected, setRoomHeader]);
   if (roomLoading) return <Spinner label="Opening room" />;
   if (roomError) return <p className="m-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">{roomError}</p>;
-  return <section className="flex h-[calc(100vh-4rem)] flex-col bg-white"><header className="border-b border-line px-5 py-4 md:px-8"><div className="mx-auto flex max-w-[920px] items-center justify-between"><div><h1 className="text-base font-bold text-ink">{room.name}</h1><p className="mt-1 text-xs text-muted">{room.members?.length || 0} members</p></div><span className="rounded-full border border-line px-3 py-1 text-xs text-muted">{isConnected ? 'Live' : 'Reconnecting'}</span></div></header><div className="min-h-0 flex-1 overflow-y-auto px-5"><CatchUpDigest />{messagesLoading ? <Spinner label="Loading messages" /> : messagesError ? <p className="mx-auto mt-5 max-w-[920px] rounded-lg bg-red-50 p-4 text-sm text-red-700">{messagesError}</p> : <MessageTimeline messages={messages} currentUserId={user.id} />}</div><MessageComposer roomName={room.name} disabled={!isConnected} onSend={sendMessage} /></section>;
+  return <section className="flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-white md:h-[calc(100vh-4.75rem)]"><div className="flex min-h-0 flex-1 flex-col overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"><CatchUpDigest />{messagesLoading ? <Spinner label="Loading messages" /> : messagesError ? <p className="mx-4 mt-5 rounded-lg bg-red-50 p-4 text-sm text-red-700 md:mx-2">{messagesError}</p> : <MessageTimeline messages={messages} currentUserId={user.id} />}</div><MessageComposer roomName={room.name} disabled={!isConnected} onSend={sendMessage} /></section>;
 }
