@@ -13,7 +13,7 @@ const previewActivity = [
 ];
 
 function MetricCard({ metric }) {
-  return <article className="h-28 rounded-panel border border-line bg-white px-5 py-4 shadow-panel md:h-auto md:p-5"><strong className={`text-xl font-bold ${metric.color}`}>{isDevAuthBypass ? metric.previewValue : '0'}</strong><p className="mt-2.5 text-sm text-muted">{metric.label}</p></article>;
+  return <article className="h-28 rounded-panel border border-line bg-white px-5 py-4 shadow-panel"><strong className={`text-xl font-bold ${metric.color}`}>{isDevAuthBypass ? metric.previewValue : '0'}</strong><p className="mt-2.5 text-sm text-muted">{metric.label}</p></article>;
 }
 
 function ActivityRows() {
@@ -24,5 +24,5 @@ function ActivityRows() {
 export default function Home() {
   const { user } = useAuth();
   const firstName = user?.display_name?.split(' ')[0] || 'there';
-  return <div className="min-h-screen bg-white px-4 pt-[91px] md:min-h-[calc(100vh-4rem)] md:px-8 md:py-20"><div className="mx-auto max-w-[920px]"><div className="px-3 md:px-0"><h1 className="text-xl font-bold leading-6 tracking-[-0.01em]">Good morning, {firstName}</h1><p className="mt-2 text-sm leading-5 text-muted">Here’s what changed while you were away.</p></div><div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-4">{metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}</div><section className="mt-8 px-3 md:mt-14 md:px-0"><h2 className="text-base font-bold leading-5">Recent activity</h2><div className="mt-7 md:mt-6"><ActivityRows /></div></section></div></div>;
+  return <div className="min-h-screen bg-white px-4 pt-[91px] md:min-h-[calc(100vh-4.75rem)] md:px-4 md:pt-7"><div className="max-w-[1140px]"><div className="px-3"><h1 className="text-xl font-bold leading-6 tracking-[-0.01em]">Good morning, {firstName}</h1><p className="mt-2 text-sm leading-5 text-muted">Here’s what changed while you were away.</p></div><div className="mt-8 grid grid-cols-1 gap-5 md:mt-9 md:grid-cols-3 md:gap-4">{metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}</div><section className="mt-8 px-3 md:mt-14"><h2 className="text-base font-bold leading-5">Recent activity</h2><div className="mt-7 md:mt-6"><ActivityRows /></div></section></div></div>;
 }
