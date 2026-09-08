@@ -1,9 +1,13 @@
-// TODO: implement Login
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AuthLayout from '../components/layout/AuthLayout';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import { useAuth } from '../contexts/AuthContext';
+
 export default function Login() {
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold">Login</h1>
-      <p className="text-gray-500 text-sm mt-1">TODO: build this page.</p>
-    </div>
-  );
+  const { login } = useAuth(); const navigate = useNavigate(); const location = useLocation();
+  const [form, setForm] = useState({ email: '', password: '' }); const [error, setError] = useState(''); const [submitting, setSubmitting] = useState(false);
+  async function submit(event) { event.preventDefault(); setSubmitting(true); setError(''); try { await login(form); navigate(location.state?.from?.pathname || '/', { replace: true }); } catch (err) { setError(err.response?.data?.message || 'Could not sign in.'); } finally { setSubmitting(false); } }
+  return <AuthLayout title="Welcome back" description="Sign in to your private workspace" alternateText="Conclave is invite-only. Ask your workspace admin for access."><form onSubmit={submit} className="space-y-5"><Input id="email" label="Email" type="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /><Input id="password" label="Password" type="password" autoComplete="current-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />{error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Signing in…' : 'Sign in'}</Button><Link className="inline-block text-sm font-semibold text-brand hover:underline" to="/register">Need an account?</Link></form></AuthLayout>;
 }

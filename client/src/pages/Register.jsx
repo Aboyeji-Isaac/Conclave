@@ -1,9 +1,13 @@
-// TODO: implement Register
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AuthLayout from '../components/layout/AuthLayout';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import { useAuth } from '../contexts/AuthContext';
+
 export default function Register() {
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold">Register</h1>
-      <p className="text-gray-500 text-sm mt-1">TODO: build this page.</p>
-    </div>
-  );
+  const { register } = useAuth(); const navigate = useNavigate();
+  const [form, setForm] = useState({ displayName: '', email: '', password: '' }); const [error, setError] = useState(''); const [submitting, setSubmitting] = useState(false);
+  async function submit(event) { event.preventDefault(); setSubmitting(true); setError(''); try { await register(form); navigate('/', { replace: true }); } catch (err) { setError(err.response?.data?.message || 'Could not create your account.'); } finally { setSubmitting(false); } }
+  return <AuthLayout title="Create your account" description="Join your private Conclave workspace" alternateText="Already have an account?" alternateLink="/login" alternateLabel="Sign in"><form onSubmit={submit} className="space-y-5"><Input id="displayName" label="Display name" autoComplete="name" required value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} /><Input id="email" label="Email" type="email" autoComplete="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /><Input id="password" label="Password" type="password" minLength="8" autoComplete="new-password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />{error && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<Button type="submit" className="w-full" disabled={submitting}>{submitting ? 'Creating account…' : 'Create account'}</Button></form></AuthLayout>;
 }
