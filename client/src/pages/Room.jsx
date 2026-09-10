@@ -5,13 +5,12 @@ import MessageComposer from '../components/chat/MessageComposer';
 import MessageTimeline from '../components/chat/MessageTimeline';
 import RoomHeader from '../components/chat/RoomHeader';
 import Spinner from '../components/ui/Spinner';
-import { useAuth } from '../contexts/AuthContext';
 import { useRealtime } from '../contexts/RealtimeContext';
 import useMessages from '../hooks/useMessages';
 import useRoom from '../hooks/useRoom';
 
 export default function Room() {
-  const { roomId } = useParams(); const { user } = useAuth(); const { isConnected } = useRealtime();
+  const { roomId } = useParams(); const { isConnected } = useRealtime();
   const { setRoomHeader } = useOutletContext();
   const { room, isLoading: roomLoading, error: roomError } = useRoom(roomId);
   const { messages, isLoading: messagesLoading, error: messagesError, sendMessage } = useMessages(roomId);
