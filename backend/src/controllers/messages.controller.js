@@ -57,9 +57,22 @@ const listMessages = asyncHandler(async (req, res) => {
       m.reply_to_id,
       m.edited_at,
       m.deleted_at,
-      m.created_at
+      m.created_at,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id',        a.id,
+            'filename',  a.file_url,
+            'size',      a.size_bytes,
+            'mime_type', a.file_type,
+            'url',       a.file_url
+          )
+        ) FILTER (WHERE a.id IS NOT NULL),
+        '[]'
+      ) AS attachments
     FROM messages m
     INNER JOIN users u ON u.id = m.sender_id
+    LEFT JOIN attachments a ON a.message_id = m.id
     WHERE m.room_id = $1
   `;
   const params = [roomId];
