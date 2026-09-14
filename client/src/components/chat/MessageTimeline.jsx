@@ -44,7 +44,7 @@ export default function MessageTimeline({ messages, scrollContainerRef }) {
             author={author(message)}
             timestamp={new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             content={message.content}
-            attachmentName={message.attachments?.[0]?.filename}
+            attachments={message.attachments}
           />
         </div>
       ))}
