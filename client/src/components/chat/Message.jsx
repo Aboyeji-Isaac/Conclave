@@ -8,7 +8,7 @@ export default function Message({ variant = 'default', author, timestamp, conten
       <div className="h-8 w-8 shrink-0 rounded-full bg-line md:h-10 md:w-10" aria-hidden="true" />
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <div className="flex items-baseline">
-          <span className="w-[94px] shrink-0 truncate text-label text-ink">{author}</span>
+          <span className="w-[98px] shrink-0 truncate text-label text-ink">{author}</span>
           <time className="text-metadata text-muted">{timestamp}</time>
         </div>
 
