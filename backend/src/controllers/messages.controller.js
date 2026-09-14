@@ -1,8 +1,8 @@
-const { query } = require('../config/db');
-const asyncHandler = require('../utils/asyncHandler');
-const { ok } = require('../utils/apiResponse');
-const ApiError = require('../utils/ApiError');
-const { createMessage } = require('../services/message.service');
+const { query } = require("../config/db");
+const asyncHandler = require("../utils/asyncHandler");
+const { ok } = require("../utils/apiResponse");
+const ApiError = require("../utils/ApiError");
+const { createMessage } = require("../services/message.service");
 
 const PAGE_SIZE = 50;
 
@@ -15,7 +15,7 @@ const sendMessage = asyncHandler(async (req, res) => {
   const { content, replyToId } = req.body;
 
   if (!roomId) {
-    throw new ApiError(400, 'roomId is required');
+    throw new ApiError(400, "roomId is required");
   }
 
   const message = await createMessage({
@@ -42,7 +42,7 @@ const listMessages = asyncHandler(async (req, res) => {
     [roomId, req.user.id],
   );
   if (membership.rows.length === 0) {
-    throw new ApiError(403, 'You are not a member of this room');
+    throw new ApiError(403, "You are not a member of this room");
   }
 
   // 2. Fetch messages — cursor-based pagination via created_at
@@ -82,7 +82,10 @@ const listMessages = asyncHandler(async (req, res) => {
     sql += ` AND m.created_at < $${params.length}`;
   }
 
-  sql += ` ORDER BY m.created_at DESC LIMIT $${params.length + 1}`;
+  sql += `
+    GROUP BY m.id, m.room_id, m.sender_id, u.display_name, u.avatar_url,
+             m.content, m.reply_to_id, m.edited_at, m.deleted_at, m.created_at
+    ORDER BY m.created_at DESC LIMIT $${params.length + 1}`;
   params.push(PAGE_SIZE);
 
   const result = await query(sql, params);
@@ -105,7 +108,7 @@ const searchMessages = asyncHandler(async (req, res) => {
   const { q } = req.query;
 
   if (!q || !q.trim()) {
-    throw new ApiError(400, 'Search query (q) is required');
+    throw new ApiError(400, "Search query (q) is required");
   }
 
   // 1. Verify the caller is a member of this room
@@ -114,7 +117,7 @@ const searchMessages = asyncHandler(async (req, res) => {
     [roomId, req.user.id],
   );
   if (membership.rows.length === 0) {
-    throw new ApiError(403, 'You are not a member of this room');
+    throw new ApiError(403, "You are not a member of this room");
   }
 
   // 2. Full-text search with ts_rank for relevance ordering
