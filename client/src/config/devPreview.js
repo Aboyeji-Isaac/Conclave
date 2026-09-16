@@ -119,11 +119,13 @@ export const previewMessages = [
 ];
 
 // Mirrors the `decisions` table (backend/database/migrations/002_decisions_tasks_digest.sql).
-// Decisions/room/list endpoints are stubbed server-side (see decisions.controller.js TODOs),
-// and there's no endpoint at all yet for "decisions across every room I'm in" — only
-// /decisions/room/:roomId exists. room_name/room_slug below are join fields that
-// endpoint would need to return; rooms has no slug column, so this is display-only,
-// same convenience as sender_name on previewMessages.
+// Same architectural gap as previewDigestSummary/previewDigestItems below: /decisions and
+// /digest are both top-level, cross-room pages in the design, but their only backend
+// endpoints (/decisions/room/:roomId, /digest/room/:roomId — see decisions.controller.js
+// and digest.controller.js, both TODO stubs) are room-scoped. Neither can list "across
+// every room I'm in" yet — that's what the backend needs to add. room_name/room_slug
+// below are join fields such an endpoint would need to return; rooms has no slug column,
+// so this is display-only, same convenience as sender_name on previewMessages.
 export const previewDecisions = [
   {
     id: "dev-decision-1",
@@ -164,6 +166,27 @@ export const previewDecisions = [
     author_name: "Victor",
     created_at: "2026-08-18T00:00:00.000Z",
   },
+];
+
+// Mirrors the digest the backend would assemble from decisions/tasks/messages/attachments
+// (see getRoomDigest's TODO comments in digest.controller.js) and cache in the `digests`
+// table (room_id, user_id, period_start, period_end, content_json). Same cross-room gap as
+// previewDecisions above: only /digest/room/:roomId exists, nothing aggregates across a
+// user's rooms yet, even though /digest is a top-level page in the design.
+export const previewDigestSummary = {
+  headline: "5 meaningful updates",
+  summary: "One decision, two task changes, a mention, and a shared file.",
+};
+
+// `type` only — no label/colour here. That's presentation, not data: the backend will
+// send a type, not display copy, so the type-to-label/colour mapping lives in
+// CatchUpDigestPage.jsx instead.
+export const previewDigestItems = [
+  { id: "dev-digest-1", type: "decision", title: "Keep Socket.IO focused on real-time events; REST handles CRUD.", metadata: "Today · 9:02 AM" },
+  { id: "dev-digest-2", type: "task", title: "Daniel, confirm production upload limits.", metadata: "Today · 10:12 AM" },
+  { id: "dev-digest-3", type: "mention", title: "Amina mentioned you in #deployments.", metadata: "Today · 11:22 AM" },
+  { id: "dev-digest-4", type: "file", title: "deployment-checklist-v2.pdf", metadata: "Today · 12:32 AM" },
+  { id: "dev-digest-5", type: "activity", title: "7 messages in #product-eng", metadata: "Today · 1:42 PM" },
 ];
 
 const listeners = new Map();
