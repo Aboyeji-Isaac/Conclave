@@ -118,6 +118,54 @@ export const previewMessages = [
   },
 ];
 
+// Mirrors the `decisions` table (backend/database/migrations/002_decisions_tasks_digest.sql).
+// Decisions/room/list endpoints are stubbed server-side (see decisions.controller.js TODOs),
+// and there's no endpoint at all yet for "decisions across every room I'm in" — only
+// /decisions/room/:roomId exists. room_name/room_slug below are join fields that
+// endpoint would need to return; rooms has no slug column, so this is display-only,
+// same convenience as sender_name on previewMessages.
+export const previewDecisions = [
+  {
+    id: "dev-decision-1",
+    room_id: previewRoom.id,
+    room_name: previewRoom.name,
+    room_slug: "product-eng",
+    source_message_id: "dev-message-1",
+    title: "Use Socket.IO for real-time events; REST handles CRUD.",
+    body: "After testing both approaches, we'll keep Socket.IO for real-time events and REST for CRUD endpoints.",
+    tags: [],
+    created_by: "dev-victor",
+    author_name: "Victor",
+    created_at: "2026-08-20T00:00:00.000Z",
+  },
+  {
+    id: "dev-decision-2",
+    room_id: "dev-room-marketing",
+    room_name: "Marketing",
+    room_slug: "marketing",
+    source_message_id: null,
+    title: "Ship upload limits with plan-aware validation.",
+    body: "Free plan caps at 25MB per file; paid plans scale with storage tier.",
+    tags: [],
+    created_by: "dev-victor",
+    author_name: "Victor",
+    created_at: "2026-08-19T00:00:00.000Z",
+  },
+  {
+    id: "dev-decision-3",
+    room_id: "dev-room-design-crit",
+    room_name: "Design Crit",
+    room_slug: "design-crit",
+    source_message_id: null,
+    title: "Keep deployment approvals inside private rooms.",
+    body: "Approval threads stay out of the public activity feed to avoid noise.",
+    tags: [],
+    created_by: "dev-victor",
+    author_name: "Victor",
+    created_at: "2026-08-18T00:00:00.000Z",
+  },
+];
+
 const listeners = new Map();
 export const previewSocket = {
   connected: true,

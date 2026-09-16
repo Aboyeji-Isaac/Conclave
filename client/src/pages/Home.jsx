@@ -34,6 +34,9 @@ export default function Home() {
   const firstName = user?.display_name?.split(' ')[0] || 'there';
   return <div className="h-full min-h-0 overflow-y-auto bg-surface px-4 pt-7"><div className="max-w-[1140px]"><div className="px-3"><h1 className="text-h1">Good morning, {firstName}</h1><p className="mt-2 text-body text-muted">Here’s what changed while you were away.</p></div>
     {/* md matches the Tablet board (2-col, 18px column-gap/20px row-gap);
-        lg matches Desktop (3-col, 18px gap). */}
-    <div className="mt-8 grid grid-cols-1 gap-5 md:mt-9 md:grid-cols-2 md:gap-x-18 md:gap-y-5 lg:grid-cols-3 lg:gap-18">{metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}</div><section className="mt-8 px-3 md:mt-14"><h2 className="text-h2">Recent activity</h2><div className="mt-7 md:mt-6"><ActivityRows /></div></section></div></div>;
+        lg matches Desktop (3-col, 18px gap). 33px top margin measured on both
+        boards — not on the Foundations spacing scale, hence the arbitrary value. */}
+    <div className="mt-8 grid grid-cols-1 gap-5 md:mt-[33px] md:grid-cols-2 md:gap-x-18 md:gap-y-5 lg:grid-cols-3 lg:gap-18">{metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}</div><section className="mt-8 px-3 md:mt-14"><h2 className="text-h2">Recent activity</h2>
+    {/* 28px measured on both Tablet and Desktop boards — matches base mt-7, no md: override needed. */}
+    <div className="mt-7"><ActivityRows /></div></section></div></div>;
 }

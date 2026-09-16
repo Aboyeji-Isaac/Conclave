@@ -4,6 +4,7 @@ import useRooms from '../../hooks/useRooms';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 import IconHome from '@/assets/icons/home.svg?react';
+import IconDecisions from '@/assets/icons/decisions.svg?react';
 import IconNotify from '@/assets/icons/notify.svg?react';
 import IconMessage from '@/assets/icons/message.svg?react';
 import IconThread from '@/assets/icons/thread.svg?react';
@@ -32,6 +33,12 @@ export default function RoomList({ onNavigate }) {
         <NavLink end to="/" onClick={onNavigate} className={rowClass}>
           <IconHome className="h-5 w-5 shrink-0" />
           Home
+        </NavLink>
+        {/* Penpot's sidebar has no Decisions link — this nav item is an
+            addition, not modeled on any board. */}
+        <NavLink to="/decisions" onClick={onNavigate} className={rowClass}>
+          <IconDecisions className="h-5 w-5 shrink-0" />
+          Decisions
         </NavLink>
         <NavLink to="/notifications" onClick={onNavigate} className={rowClass}>
           <IconNotify className="h-5 w-5 shrink-0" />
