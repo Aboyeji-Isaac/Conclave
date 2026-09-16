@@ -36,7 +36,8 @@ export default function MessageTimeline({ messages, scrollContainerRef }) {
 
   if (!messages.length) return <EmptyState title="Start the conversation" description="Messages sent to this room will appear here." />;
   return (
-    <div className="flex flex-1 flex-col space-y-6 px-7 pb-5 pt-12 md:space-y-7 md:px-5 md:pb-6">
+    // 28px horizontal padding measured on both Tablet and Desktop boards — matches base px-7, no md: override needed.
+    <div className="flex flex-1 flex-col space-y-4 px-7 pb-5 pt-12 md:pb-6">
       {messages.map((message, index) => (
         <div key={message.id} className={index === 0 ? 'mt-auto' : undefined}>
           <Message

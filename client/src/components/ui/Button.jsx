@@ -1,6 +1,8 @@
 export default function Button({ className = '', variant = 'primary', type = 'button', ...props }) {
   const variants = {
-    primary: 'bg-brand text-surface hover:bg-[#4338ca] disabled:bg-[#aaa5f2]',
+    // Penpot has no hover/disabled state for buttons; these are opacity-derived
+    // from bg-brand pending a design answer for the real hover/disabled colours.
+    primary: 'bg-brand text-surface hover:bg-brand/90 disabled:bg-brand/40',
     secondary: 'border border-line bg-surface text-ink hover:bg-canvas',
     ghost: 'text-muted hover:bg-canvas hover:text-ink',
   };

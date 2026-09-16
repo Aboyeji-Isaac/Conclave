@@ -17,7 +17,7 @@ export default function AppShell() {
   }, [drawerOpen]);
 
   return (
-    <div className="grid h-dvh min-h-0 grid-cols-1 bg-canvas text-ink md:grid-cols-[220px_1fr]">
+    <div className="grid h-dvh min-h-0 grid-cols-1 bg-canvas text-ink md:grid-cols-[220px_1fr] lg:grid-cols-[248px_1fr]">
       <aside className="hidden min-h-0 border-r border-line bg-surface md:block">
         <RoomList onNavigate={() => setDrawerOpen(false)} />
       </aside>

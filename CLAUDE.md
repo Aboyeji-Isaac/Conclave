@@ -13,7 +13,16 @@
 - Tailwind tokens in client/tailwind.config.js mirror Foundations. Use
   them; never hardcode hex values or arbitrary px.
 - Line heights are unitless 1.2 everywhere.
-- md (768px) is the only breakpoint. sm and lg are removed deliberately.
+- md (768px) and lg (1280px) are the only breakpoints. sm is removed
+  deliberately. md covers the Penpot Tablet board (834), lg covers
+  Desktop (1440).
+- Values measured from the Desktop board belong at lg:; values
+  measured from the Tablet board belong at md:.
+- Not everything has a Penpot source: RoomHeader's dynamic text
+  (room name/member count/connection status), Room's error states,
+  and MessageTimeline's bottom padding aren't modeled on any board.
+  Don't force a breakpoint value for these from a board that doesn't
+  represent them.
 
 ## Do not touch
 - Backend/API contracts and service-layer signatures.

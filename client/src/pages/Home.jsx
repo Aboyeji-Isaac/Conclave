@@ -22,17 +22,18 @@ function MetricCard({ metric }) {
 
 function ActivityRows() {
   if (!isDevAuthBypass) return <div className="rounded-xl border border-dashed border-line px-6 py-12 text-center"><p className="text-sm font-medium text-ink">Nothing new yet</p><p className="mt-1 text-sm text-muted">Open a room to continue the conversation.</p></div>;
-  // 16px/57px measured against Room View's actual Message component instances
-  // (auto-height content, not a hand-drawn mockup value) — not a Foundations token.
-  return <div className="space-y-4 md:space-y-[57px]">{previewActivity.map((item) => <Message key={item.id} variant={item.variant || 'default'} author={item.author} timestamp={item.timestamp} content={item.content} attachments={item.attachments} />)}</div>;
+  // 16px verified as a true flow gap on Room View Mobile (varying row heights,
+  // constant gap). Tablet/Desktop rows sit in a fixed 100px slot regardless of
+  // content height, so their apparent "57px gap" is a mockup artifact, not a
+  // real value — 16px applies uniformly instead.
+  return <div className="space-y-4">{previewActivity.map((item) => <Message key={item.id} variant={item.variant || 'default'} author={item.author} timestamp={item.timestamp} content={item.content} attachments={item.attachments} />)}</div>;
 }
 
 export default function Home() {
   const { user } = useAuth();
   const firstName = user?.display_name?.split(' ')[0] || 'there';
   return <div className="h-full min-h-0 overflow-y-auto bg-surface px-4 pt-7"><div className="max-w-[1140px]"><div className="px-3"><h1 className="text-h1">Good morning, {firstName}</h1><p className="mt-2 text-body text-muted">Here’s what changed while you were away.</p></div>
-    {/* md:grid-cols-3 matches the Desktop board (3-up, 18px gaps). The Tablet board
-        actually shows a 2-column wrap (18px column-gap/20px row-gap) at the same
-        md breakpoint — not expressible with the single md breakpoint this project uses. */}
-    <div className="mt-8 grid grid-cols-1 gap-5 md:mt-9 md:grid-cols-3 md:gap-18">{metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}</div><section className="mt-8 px-3 md:mt-14"><h2 className="text-h2">Recent activity</h2><div className="mt-7 md:mt-6"><ActivityRows /></div></section></div></div>;
+    {/* md matches the Tablet board (2-col, 18px column-gap/20px row-gap);
+        lg matches Desktop (3-col, 18px gap). */}
+    <div className="mt-8 grid grid-cols-1 gap-5 md:mt-9 md:grid-cols-2 md:gap-x-18 md:gap-y-5 lg:grid-cols-3 lg:gap-18">{metrics.map((metric) => <MetricCard key={metric.label} metric={metric} />)}</div><section className="mt-8 px-3 md:mt-14"><h2 className="text-h2">Recent activity</h2><div className="mt-7 md:mt-6"><ActivityRows /></div></section></div></div>;
 }

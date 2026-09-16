@@ -9,7 +9,8 @@ export default function MessageComposer({ disabled, onSend }) {
   const [content, setContent] = useState(''); const [error, setError] = useState('');
   function submit(event) { event.preventDefault(); const value = content.trim(); if (!value) return; try { onSend(value); setContent(''); setError(''); } catch (err) { setError(err.message); } }
   return (
-    <form onSubmit={submit} className="shrink-0 bg-surface px-4 pb-6 pt-2 md:px-2">
+    // 16px padding measured on both Tablet and Desktop boards — matches base px-4, no md: override needed.
+    <form onSubmit={submit} className="shrink-0 bg-surface px-4 pb-6 pt-2">
       <div className="flex h-16 items-center gap-2 rounded-lg border border-line bg-surface px-3 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/10">
         <div className="flex shrink-0 gap-1">
           <ComposerIcon label="Attach file"><IconAttach className="h-5 w-5" /></ComposerIcon>
