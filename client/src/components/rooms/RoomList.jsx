@@ -5,10 +5,21 @@ import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 import IconHome from '@/assets/icons/home.svg?react';
 import IconDecisions from '@/assets/icons/decisions.svg?react';
+import IconTasks from '@/assets/icons/tasks.svg?react';
 import IconNotify from '@/assets/icons/notify.svg?react';
 import IconMessage from '@/assets/icons/message.svg?react';
+import IconHash from '@/assets/icons/hash.svg?react';
+import IconLock from '@/assets/icons/locked.svg?react';
 import IconThread from '@/assets/icons/thread.svg?react';
 import IconMember from '@/assets/icons/member.svg?react';
+
+// Design specifies Hash for public rooms, Lock for private. Neither Penpot nor this
+// task addresses 'dm' | 'group' | 'department' — thread.svg stays as their fallback.
+function RoomIcon({ type }) {
+  if (type === 'public') return <IconHash className="h-5 w-5 shrink-0" />;
+  if (type === 'private') return <IconLock className="h-5 w-5 shrink-0" />;
+  return <IconThread className="h-5 w-5 shrink-0" />;
+}
 
 // 44px row pitch = 36px pill (h-9) + 8px gap-2 on the parent nav.
 // Active pill is 196 wide: 220 sidebar - 12 (mx-3) each side.
@@ -40,6 +51,11 @@ export default function RoomList({ onNavigate }) {
           <IconDecisions className="h-5 w-5 shrink-0" />
           Decisions
         </NavLink>
+        {/* Penpot's sidebar has no Tasks link either — an addition, same as Decisions. */}
+        <NavLink to="/tasks" onClick={onNavigate} className={rowClass}>
+          <IconTasks className="h-5 w-5 shrink-0" />
+          Tasks
+        </NavLink>
         <NavLink to="/notifications" onClick={onNavigate} className={rowClass}>
           <IconNotify className="h-5 w-5 shrink-0" />
           Notifications
@@ -60,7 +76,7 @@ export default function RoomList({ onNavigate }) {
         )}
         {rooms.map((room) => (
           <NavLink key={room.id} to={`/rooms/${room.id}`} onClick={onNavigate} className={rowClass}>
-            <IconThread className="h-5 w-5 shrink-0" />
+            <RoomIcon type={room.type} />
             <span className="min-w-0 truncate">{room.name}</span>
           </NavLink>
         ))}
