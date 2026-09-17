@@ -21,7 +21,10 @@ function RoomIcon({ type }) {
   return <IconThread className="h-5 w-5 shrink-0" />;
 }
 
-// 44px row pitch = 36px pill (h-9) + 8px gap-2 on the parent nav.
+// Row pill is 36px (h-9); pitch is set by each parent nav's gap.
+// Workspace nav below: 44px pitch (h-9 + gap-2). Rooms nav: 42px pitch
+// (h-9 + gap-1.5) — confirmed against the Sidebar instance; the 36px
+// active-room highlight only fits a 42px pitch.
 // Active pill is 196 wide: 220 sidebar - 12 (mx-3) each side.
 const rowClass = ({ isActive }) =>
   `mx-3 flex h-9 items-center gap-3 rounded-lg pl-3 text-body transition-colors ${
@@ -68,7 +71,7 @@ export default function RoomList({ onNavigate }) {
       </nav>
 
       <p className="mt-12 px-6 text-label uppercase text-muted">Rooms</p>
-      <nav className="mt-5 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <nav className="mt-5 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {isLoading && <Spinner label="Loading rooms" />}
         {error && <p className="mx-3 text-metadata text-error">{error}</p>}
         {!isLoading && !error && rooms.length === 0 && (
