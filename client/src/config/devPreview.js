@@ -118,6 +118,96 @@ export const previewMessages = [
   },
 ];
 
+// Mirrors the `decisions` table (backend/database/migrations/002_decisions_tasks_digest.sql).
+// Same architectural gap as previewDigestSummary/previewDigestItems below: /decisions and
+// /digest are both top-level, cross-room pages in the design, but their only backend
+// endpoints (/decisions/room/:roomId, /digest/room/:roomId — see decisions.controller.js
+// and digest.controller.js, both TODO stubs) are room-scoped. Neither can list "across
+// every room I'm in" yet — that's what the backend needs to add. room_name/room_slug
+// below are join fields such an endpoint would need to return; rooms has no slug column,
+// so this is display-only, same convenience as sender_name on previewMessages.
+export const previewDecisions = [
+  {
+    id: "dev-decision-1",
+    room_id: previewRoom.id,
+    room_name: previewRoom.name,
+    room_slug: "product-eng",
+    source_message_id: "dev-message-1",
+    title: "Use Socket.IO for real-time events; REST handles CRUD.",
+    body: "After testing both approaches, we'll keep Socket.IO for real-time events and REST for CRUD endpoints.",
+    tags: [],
+    created_by: "dev-victor",
+    author_name: "Victor",
+    created_at: "2026-08-20T00:00:00.000Z",
+  },
+  {
+    id: "dev-decision-2",
+    room_id: "dev-room-marketing",
+    room_name: "Marketing",
+    room_slug: "marketing",
+    source_message_id: null,
+    title: "Ship upload limits with plan-aware validation.",
+    body: "Free plan caps at 25MB per file; paid plans scale with storage tier.",
+    tags: [],
+    created_by: "dev-victor",
+    author_name: "Victor",
+    created_at: "2026-08-19T00:00:00.000Z",
+  },
+  {
+    id: "dev-decision-3",
+    room_id: "dev-room-design-crit",
+    room_name: "Design Crit",
+    room_slug: "design-crit",
+    source_message_id: null,
+    title: "Keep deployment approvals inside private rooms.",
+    body: "Approval threads stay out of the public activity feed to avoid noise.",
+    tags: [],
+    created_by: "dev-victor",
+    author_name: "Victor",
+    created_at: "2026-08-18T00:00:00.000Z",
+  },
+];
+
+// Mirrors the digest the backend would assemble from decisions/tasks/messages/attachments
+// (see getRoomDigest's TODO comments in digest.controller.js) and cache in the `digests`
+// table (room_id, user_id, period_start, period_end, content_json). Same cross-room gap as
+// previewDecisions above: only /digest/room/:roomId exists, nothing aggregates across a
+// user's rooms yet, even though /digest is a top-level page in the design.
+export const previewDigestSummary = {
+  headline: "5 meaningful updates",
+  summary: "One decision, two task changes, a mention, and a shared file.",
+};
+
+// `type` only — no label/colour here. That's presentation, not data: the backend will
+// send a type, not display copy, so the type-to-label/colour mapping lives in
+// CatchUpDigestPage.jsx instead.
+export const previewDigestItems = [
+  { id: "dev-digest-1", type: "decision", title: "Keep Socket.IO focused on real-time events; REST handles CRUD.", metadata: "Today · 9:02 AM" },
+  { id: "dev-digest-2", type: "task", title: "Daniel, confirm production upload limits.", metadata: "Today · 10:12 AM" },
+  { id: "dev-digest-3", type: "mention", title: "Amina mentioned you in #deployments.", metadata: "Today · 11:22 AM" },
+  { id: "dev-digest-4", type: "file", title: "deployment-checklist-v2.pdf", metadata: "Today · 12:32 AM" },
+  { id: "dev-digest-5", type: "activity", title: "7 messages in #product-eng", metadata: "Today · 1:42 PM" },
+];
+
+// Mirrors the `tasks` table (backend/database/migrations/002_decisions_tasks_digest.sql).
+// /tasks/room/:roomId, POST /tasks, and PATCH /tasks/:taskId/status all exist
+// (tasks.routes.js) but are TODO stubs (tasks.controller.js). `status` already matches
+// the board's three columns 1:1 ('open'|'in_progress'|'done'), no extra mapping needed.
+// assignee_name is a join field the real endpoint would need to return, same convenience
+// as sender_name/author_name elsewhere in this file.
+export const previewTasks = [
+  { id: "dev-task-1", room_id: previewRoom.id, status: "open", title: "Confirm production upload limits", assignee_id: "dev-priya", assignee_name: "Priya", due_date: "2026-08-22" },
+  { id: "dev-task-2", room_id: previewRoom.id, status: "open", title: "Validate deployment config", assignee_id: "dev-victor", assignee_name: "Victor", due_date: "2026-08-23" },
+  { id: "dev-task-3", room_id: previewRoom.id, status: "open", title: "Review storage alerts", assignee_id: "dev-victor", assignee_name: "Victor", due_date: "2026-08-24" },
+  { id: "dev-task-4", room_id: previewRoom.id, status: "in_progress", title: "Draft API rate-limit docs", assignee_id: previewUser.id, assignee_name: "Amina", due_date: "2026-08-21" },
+  { id: "dev-task-5", room_id: previewRoom.id, status: "in_progress", title: "Wire Socket.IO reconnect handling", assignee_id: "dev-daniel", assignee_name: "Daniel", due_date: "2026-08-25" },
+  { id: "dev-task-6", room_id: previewRoom.id, status: "done", title: "Set up staging environment", assignee_id: "dev-victor", assignee_name: "Victor", due_date: "2026-08-18" },
+  { id: "dev-task-7", room_id: previewRoom.id, status: "done", title: "Migrate auth middleware to JWT", assignee_id: previewUser.id, assignee_name: "Amina", due_date: "2026-08-19" },
+  { id: "dev-task-8", room_id: previewRoom.id, status: "done", title: "Write onboarding checklist", assignee_id: "dev-priya", assignee_name: "Priya", due_date: "2026-08-19" },
+  { id: "dev-task-9", room_id: previewRoom.id, status: "done", title: "Fix flaky websocket reconnect test", assignee_id: "dev-daniel", assignee_name: "Daniel", due_date: "2026-08-20" },
+  { id: "dev-task-10", room_id: previewRoom.id, status: "done", title: "Ship upload size validation", assignee_id: "dev-victor", assignee_name: "Victor", due_date: "2026-08-20" },
+];
+
 const listeners = new Map();
 export const previewSocket = {
   connected: true,

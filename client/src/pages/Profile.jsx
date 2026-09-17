@@ -26,7 +26,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="h-full min-h-0 overflow-y-auto bg-white px-4 pt-7">
+    <div className="h-full min-h-0 overflow-y-auto bg-surface px-4 pt-7">
       <div className="max-w-[640px]">
         <h1 className="text-xl font-bold leading-6 tracking-[-0.01em]">Profile</h1>
 
@@ -63,7 +63,7 @@ export default function Profile() {
           <button
             type="button"
             onClick={handleDeleteAccount}
-            className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-error px-4 text-sm font-semibold text-error transition-colors hover:bg-error hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/30"
+            className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-error px-4 text-sm font-semibold text-error transition-colors hover:bg-error hover:text-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/30"
           >
             <IconDelete className="h-5 w-5" />
             Delete account

@@ -2,7 +2,7 @@
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
-    screens: { md: '768px' },
+    screens: { md: '768px', lg: '1280px' },
     extend: {
       // Values sourced from the Penpot "Conclave-Foundations" token set.
       colors: {

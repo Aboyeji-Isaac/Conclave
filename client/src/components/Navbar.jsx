@@ -4,7 +4,7 @@ import IconNotify from '../assets/icons/notify.svg?react';
 
 export default function Navbar({ roomHeader = null, onMenuClick }) {
   return (
-    <header className="border-b border-line bg-white">
+    <header className="border-b border-line bg-surface">
       <nav className="flex h-16 items-center gap-4 pl-4 pr-7">
         <button
           type="button"

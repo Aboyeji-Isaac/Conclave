@@ -4,12 +4,27 @@ import useRooms from '../../hooks/useRooms';
 import EmptyState from '../ui/EmptyState';
 import Spinner from '../ui/Spinner';
 import IconHome from '@/assets/icons/home.svg?react';
+import IconDecisions from '@/assets/icons/decisions.svg?react';
+import IconTasks from '@/assets/icons/tasks.svg?react';
 import IconNotify from '@/assets/icons/notify.svg?react';
 import IconMessage from '@/assets/icons/message.svg?react';
+import IconHash from '@/assets/icons/hash.svg?react';
+import IconLock from '@/assets/icons/locked.svg?react';
 import IconThread from '@/assets/icons/thread.svg?react';
 import IconMember from '@/assets/icons/member.svg?react';
 
-// 44px row pitch = 36px pill (h-9) + 8px gap-2 on the parent nav.
+// Design specifies Hash for public rooms, Lock for private. Neither Penpot nor this
+// task addresses 'dm' | 'group' | 'department' — thread.svg stays as their fallback.
+function RoomIcon({ type }) {
+  if (type === 'public') return <IconHash className="h-5 w-5 shrink-0" />;
+  if (type === 'private') return <IconLock className="h-5 w-5 shrink-0" />;
+  return <IconThread className="h-5 w-5 shrink-0" />;
+}
+
+// Row pill is 36px (h-9); pitch is set by each parent nav's gap.
+// Workspace nav below: 44px pitch (h-9 + gap-2). Rooms nav: 42px pitch
+// (h-9 + gap-1.5) — confirmed against the Sidebar instance; the 36px
+// active-room highlight only fits a 42px pitch.
 // Active pill is 196 wide: 220 sidebar - 12 (mx-3) each side.
 const rowClass = ({ isActive }) =>
   `mx-3 flex h-9 items-center gap-3 rounded-lg pl-3 text-body transition-colors ${
@@ -33,6 +48,17 @@ export default function RoomList({ onNavigate }) {
           <IconHome className="h-5 w-5 shrink-0" />
           Home
         </NavLink>
+        {/* Penpot's sidebar has no Decisions link — this nav item is an
+            addition, not modeled on any board. */}
+        <NavLink to="/decisions" onClick={onNavigate} className={rowClass}>
+          <IconDecisions className="h-5 w-5 shrink-0" />
+          Decisions
+        </NavLink>
+        {/* Penpot's sidebar has no Tasks link either — an addition, same as Decisions. */}
+        <NavLink to="/tasks" onClick={onNavigate} className={rowClass}>
+          <IconTasks className="h-5 w-5 shrink-0" />
+          Tasks
+        </NavLink>
         <NavLink to="/notifications" onClick={onNavigate} className={rowClass}>
           <IconNotify className="h-5 w-5 shrink-0" />
           Notifications
@@ -45,7 +71,7 @@ export default function RoomList({ onNavigate }) {
       </nav>
 
       <p className="mt-12 px-6 text-label uppercase text-muted">Rooms</p>
-      <nav className="mt-5 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <nav className="mt-5 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
         {isLoading && <Spinner label="Loading rooms" />}
         {error && <p className="mx-3 text-metadata text-error">{error}</p>}
         {!isLoading && !error && rooms.length === 0 && (
@@ -53,7 +79,7 @@ export default function RoomList({ onNavigate }) {
         )}
         {rooms.map((room) => (
           <NavLink key={room.id} to={`/rooms/${room.id}`} onClick={onNavigate} className={rowClass}>
-            <IconThread className="h-5 w-5 shrink-0" />
+            <RoomIcon type={room.type} />
             <span className="min-w-0 truncate">{room.name}</span>
           </NavLink>
         ))}
