@@ -1,4 +1,4 @@
-const { query } = require('../config/db');
+const { pool, query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -12,9 +12,10 @@ const ApiError = require('../utils/ApiError');
  * @param {string} params.senderId - UUID of the sending user
  * @param {string} params.content   - message body text
  * @param {string} [params.replyToId] - UUID of the message being replied to
- * @returns {object} The inserted message row enriched with sender info
+ * @param {Array}  [params.attachments] - array of { filename, url, mime_type, size }
+ * @returns {object} The inserted message row enriched with sender info and attachments
  */
-async function createMessage({ roomId, senderId, content, replyToId }) {
+async function createMessage({ roomId, senderId, content, replyToId, attachments }) {
   if (!content || !content.trim()) {
     throw new ApiError(400, 'Message content is required');
   }
@@ -43,23 +44,43 @@ async function createMessage({ roomId, senderId, content, replyToId }) {
     }
   }
 
-  // 3. Insert the message and return it with sender info (1 query)
-  const result = await query(
-    `INSERT INTO messages (room_id, sender_id, content, reply_to_id)
-     VALUES ($1, $2, $3, $4)
-     RETURNING
-       id,
-       room_id,
-       sender_id,
-       content,
-       reply_to_id,
-       edited_at,
-       deleted_at,
-       created_at`,
-    [roomId, senderId, content.trim(), replyToId || null],
-  );
+  // 3. Insert message + attachments in a transaction
+  const client = await pool.connect();
+  let message;
+  let savedAttachments = [];
 
-  const message = result.rows[0];
+  try {
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      `INSERT INTO messages (room_id, sender_id, content, reply_to_id)
+       VALUES ($1, $2, $3, $4)
+       RETURNING
+         id, room_id, sender_id, content, reply_to_id,
+         edited_at, deleted_at, created_at`,
+      [roomId, senderId, content.trim(), replyToId || null],
+    );
+    message = result.rows[0];
+
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      for (const a of attachments) {
+        const attResult = await client.query(
+          `INSERT INTO attachments (message_id, filename, file_url, file_type, size_bytes)
+           VALUES ($1, $2, $3, $4, $5)
+           RETURNING id, filename, file_url, file_type, size_bytes`,
+          [message.id, a.filename, a.url, a.mime_type, a.size || null],
+        );
+        savedAttachments.push(attResult.rows[0]);
+      }
+    }
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 
   // 4. Fetch sender display_name + avatar for the broadcast
   const sender = await query(
@@ -70,6 +91,7 @@ async function createMessage({ roomId, senderId, content, replyToId }) {
   return {
     ...message,
     sender: sender.rows[0] || null,
+    attachments: savedAttachments,
   };
 }
 

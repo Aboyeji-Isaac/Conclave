@@ -91,13 +91,14 @@ function registerSocketHandlers(io) {
     });
 
     // --- send-message: persist to DB, then broadcast the saved row ---
-    socket.on('send-message', async ({ roomId, content, replyToId }) => {
+    socket.on('send-message', async ({ roomId, content, replyToId, attachments }) => {
       try {
         const message = await createMessage({
           roomId,
           senderId: userId,
           content,
           replyToId,
+          attachments,
         });
 
         // Auto-clear typing indicator when a message is sent
