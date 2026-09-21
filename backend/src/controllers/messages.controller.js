@@ -62,7 +62,7 @@ const listMessages = asyncHandler(async (req, res) => {
         json_agg(
           json_build_object(
             'id',        a.id,
-            'filename',  a.file_url,
+            'filename',  a.filename,
             'size',      a.size_bytes,
             'mime_type', a.file_type,
             'url',       a.file_url

@@ -89,6 +89,7 @@ const listRooms = asyncHandler(async (req, res) => {
     `SELECT
        r.id,
        r.name,
+       r.type,
        r.created_by,
        r.created_at,
        rm.role AS my_role,
@@ -104,6 +105,7 @@ const listRooms = asyncHandler(async (req, res) => {
      GROUP BY
        r.id,
        r.name,
+       r.type,
        r.created_by,
        r.created_at,
        rm.role,
