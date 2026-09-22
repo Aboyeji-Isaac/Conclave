@@ -49,13 +49,14 @@ const getRoomDigest = asyncHandler(async (req, res) => {
   );
 
   // 4. Messages that @-mention me since last visit
+  // Stopgap: matching by @displayName until structured mentions exist (BACKEND_TASKS.md)
   const mentions = await query(
     `SELECT m.id, m.content, m.created_at, u.display_name AS sender_name
      FROM messages m
      INNER JOIN users u ON u.id = m.sender_id
      WHERE m.room_id = $1
        AND m.created_at > $2
-       AND m.content ILIKE '%' || $3 || '%'
+       AND m.content ILIKE '%@' || (SELECT display_name FROM users WHERE id = $3) || '%'
        AND m.sender_id != $3
      ORDER BY m.created_at DESC
      LIMIT 20`,
@@ -182,6 +183,7 @@ const getUserDigest = asyncHandler(async (req, res) => {
   );
 
   // 3. Messages that @-mention me
+  // Stopgap: matching by @displayName until structured mentions exist (BACKEND_TASKS.md)
   const mentions = await query(
     `SELECT m.id, m.content, m.created_at, m.room_id,
             r.name AS room_name, u.display_name AS sender_name
@@ -189,7 +191,7 @@ const getUserDigest = asyncHandler(async (req, res) => {
      INNER JOIN rooms r ON r.id = m.room_id
      INNER JOIN users u ON u.id = m.sender_id
      WHERE m.room_id = ANY($1)
-       AND m.content ILIKE '%' || $2 || '%'
+       AND m.content ILIKE '%@' || (SELECT display_name FROM users WHERE id = $2) || '%'
        AND m.sender_id != $2
      ORDER BY m.created_at DESC
      LIMIT 50`,
