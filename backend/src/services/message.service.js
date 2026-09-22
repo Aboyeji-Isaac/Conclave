@@ -90,7 +90,8 @@ async function createMessage({ roomId, senderId, content, replyToId, attachments
 
   return {
     ...message,
-    sender: sender.rows[0] || null,
+    sender_name: sender.rows[0]?.display_name || null,
+    sender_avatar: sender.rows[0]?.avatar_url || null,
     attachments: savedAttachments,
   };
 }
