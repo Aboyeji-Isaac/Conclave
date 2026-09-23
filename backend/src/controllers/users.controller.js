@@ -1,4 +1,4 @@
-const { query } = require('../config/db');
+const { pool, query } = require('../config/db');
 const asyncHandler = require('../utils/asyncHandler');
 const { ok } = require('../utils/apiResponse');
 const ApiError = require('../utils/ApiError');
@@ -9,9 +9,12 @@ const PAGE_SIZE = 25;
 // ---------- getMe ----------
 const getMe = asyncHandler(async (req, res) => {
   const result = await query(
-    'SELECT id, email, display_name, avatar_url, bio, created_at FROM users WHERE id = $1',
+    'SELECT id, email, display_name, avatar_url, bio, created_at FROM users WHERE id = $1 AND deleted_at IS NULL',
     [req.user.id]
   );
+  if (result.rows.length === 0) {
+    throw new ApiError(404, 'User not found');
+  }
   return ok(res, result.rows[0]);
 });
 
@@ -74,10 +77,10 @@ const listUsers = asyncHandler(async (req, res) => {
   const offset = (pageNum - 1) * PAGE_SIZE;
 
   const params = [];
-  let where = '';
+  let where = 'WHERE deleted_at IS NULL';
   if (q && q.trim()) {
     params.push(`%${q.trim()}%`);
-    where = `WHERE display_name ILIKE $${params.length} OR email ILIKE $${params.length}`;
+    where += ` AND (display_name ILIKE $${params.length} OR email ILIKE $${params.length})`;
   }
 
   params.push(PAGE_SIZE, offset);
@@ -98,4 +101,46 @@ const listUsers = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getMe, updateProfile, listUsers };
+// ---------- deleteMe ----------
+// Soft-delete the authenticated user's account. Anonymizes profile data,
+// kills all sessions, and removes room memberships in a transaction.
+// Messages, decisions, and tasks are preserved — they still reference
+// sender_id/created_by which still exists; the JOIN on users returns
+// "Deleted user" for display.
+const deleteMe = asyncHandler(async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // 1. Anonymize and mark deleted
+    await client.query(
+      `UPDATE users
+       SET deleted_at = NOW(),
+           email = NULL,
+           password_hash = '',
+           display_name = 'Deleted user',
+           avatar_url = NULL,
+           bio = NULL
+       WHERE id = $1 AND deleted_at IS NULL`,
+      [req.user.id],
+    );
+
+    // 2. Kill all sessions (refresh tokens)
+    await client.query('DELETE FROM refresh_tokens WHERE user_id = $1', [req.user.id]);
+
+    // 3. Remove from all rooms
+    await client.query('DELETE FROM room_members WHERE user_id = $1', [req.user.id]);
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  return ok(res, { message: 'Account deleted' });
+});
+
+module.exports = { getMe, updateProfile, listUsers, deleteMe };

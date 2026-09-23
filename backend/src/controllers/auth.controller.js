@@ -55,7 +55,7 @@ const login = asyncHandler(async (req, res) => {
   }
 
   const result = await query(
-    'SELECT id, email, display_name, password_hash FROM users WHERE email = $1',
+    'SELECT id, email, display_name, password_hash FROM users WHERE email = $1 AND deleted_at IS NULL',
     [email]
   );
   const user = result.rows[0];
@@ -98,7 +98,7 @@ const refresh = asyncHandler(async (req, res) => {
     throw new ApiError(401, 'Refresh token not recognized — please log in again');
   }
 
-  const userResult = await query('SELECT id, email FROM users WHERE id = $1', [payload.sub]);
+  const userResult = await query('SELECT id, email FROM users WHERE id = $1 AND deleted_at IS NULL', [payload.sub]);
   const user = userResult.rows[0];
   if (!user) throw new ApiError(401, 'User no longer exists');
 
