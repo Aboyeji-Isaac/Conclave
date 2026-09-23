@@ -12,7 +12,7 @@ const PAGE_SIZE = 50;
 // write through message.service.createMessage so history stays consistent.
 const sendMessage = asyncHandler(async (req, res) => {
   const { roomId } = req.body;
-  const { content, replyToId } = req.body;
+  const { content, replyToId, attachments } = req.body;
 
   if (!roomId) {
     throw new ApiError(400, "roomId is required");
@@ -23,6 +23,7 @@ const sendMessage = asyncHandler(async (req, res) => {
     senderId: req.user.id,
     content,
     replyToId,
+    attachments,
   });
 
   return ok(res, message, 201);
