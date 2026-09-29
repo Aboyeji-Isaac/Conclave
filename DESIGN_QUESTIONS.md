@@ -20,7 +20,7 @@ Every board on the Icons page is an empty 24×24 box with a label and a Lucide n
 
 The mapping turned out to be valuable: the frontend icon set was audited against it and **four of five checked icons were wrong**, including ones already live in the sidebar.
 
-### A3. Placeholder copy left in the boards
+### A3. Placeholder copy left in the boards — Resolved
 
 Four instances where component placeholder text was never replaced:
 
@@ -32,6 +32,14 @@ Four instances where component placeholder text was never replaced:
 | Catch-up Digest | "Today · 12:32 AM" | valid, but reads as midnight mid-morning |
 
 Also: the Tasks Board repeats the same three task titles across all three columns, and Decisions uses the same `#product-eng` on every card despite the screen's whole point being cross-room. Both read as placeholder duplication rather than intent.
+
+**Resolved:** all 11 placeholder text nodes corrected.
+
+### A4. Naming case is inconsistent between boards and library assets
+
+Board names use camelCase (`textPrimary`) while library assets use spaced
+title case (`Text Primary`). Pre-existing inconsistency in the file —
+worth picking one convention.
 
 ---
 
@@ -94,25 +102,37 @@ There is one line-height token, `Typography.LineHeight.Default = 1.2`, reference
 
 Implemented as specified. Worth confirming it's intended rather than a default that was never revisited.
 
-### E2. Fixed 94/98px timestamp column
+### E2. Fixed 94/98px timestamp column — Resolved
 
 In every message row the timestamp sits at a fixed offset from the content column start, not as a gap after the author name — confirmed across rows with different name lengths. Implemented as a fixed-width column.
 
 Is that deliberate alignment, or an artefact of hand-placing text?
 
+**Resolved:** fixed 98px timestamp column at all breakpoints, confirmed
+against the components. The 94px figure came from hand-drawn rows that
+no longer exist. Implementation was correct.
+
 ### E3. Asymmetric TopBar padding
 
 Left 16px, right 28px. Implemented as drawn.
 
-### E4. Nav rows 44px, room rows 42px
+### E4. Nav rows 44px, room rows 42px — Confirmed deliberate
 
 A 2px difference between two visually parallel lists. Treated as measurement noise and both implemented at 44.
 
-### E5. Row spacing in mockups is slot-based, not flow-based
+**Resolved:** confirmed deliberate, not noise. Nav rows 44px, room rows
+42px. Code updated.
+
+### E5. Row spacing in mockups is slot-based, not flow-based — Partially resolved
 
 Message rows in the Room View and Workspace Shell boards sit at a constant 100px pitch regardless of their actual height — rows of 43px and 60px both produce a 100px delta. That only happens with fixed-height slots.
 
 This matters because it makes the apparent gap unmeasurable from those boards. Mobile is the only board where spacing flows with content, at a consistent 16px, so that's the value used.
+
+**Partially resolved:** Room View boards now use real 24px flow gaps
+(Mobile 16px) and code is updated to `space-y-4 md:space-y-6`. The
+Workspace Shell boards still have the slot artefact, so Home's activity
+list stays at 16px.
 
 ---
 
@@ -134,6 +154,9 @@ Worth recording, because it shaped the build. The Message component is byte-iden
 
 So the design describes three layouts, not two, and the frontend now has `md` (768) for Tablet and `lg` (1280) for Desktop.
 
-### F3. `brand-soft` isn't a token
+### F3. `brand-soft` isn't a token — Resolved
 
 `#EEF2FF` is used by several components — the active sidebar row among them — but isn't in the Foundations token set. Worth adding as `Color.Primary.Soft`.
+
+**Resolved:** `Color.Primary.Soft` (`#EEF2FF`) added to Foundations as
+both a library asset and a swatch board.
